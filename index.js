@@ -13,7 +13,7 @@ const productModel = require("./Models/productModel");
 const app = express();
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 app.use(cors());
-// app.use(json());
+app.use(json());
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -136,7 +136,15 @@ app.post("/addproduct", async (req, res) => {
   };
   console.log(obj);
   const data = new productModel(obj);
-  await data.save();
+  await data
+    .save()
+    .then(() => {
+      res.send("customer added sccessfully");
+    })
+    .catch((err) => {
+      res.status(400);
+      console.log(err);
+    });
 });
 
 app.get("/getproduct", async (req, res) => {
