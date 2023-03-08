@@ -9,6 +9,7 @@ const multer = require("multer");
 const fs = require("fs");
 const imageModel = require("./Models/imageModels");
 const productModel = require("./Models/productModel");
+const ParentCategories = require("./Models/ParentCategories");
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -173,6 +174,34 @@ app.post("/addproduct", async (req, res) => {
       res.status(400);
       console.log(err);
     });
+});
+
+app.post("/addparentcategory", async (req, res) => {
+  connectDB("ecomadmin");
+
+  const count = await ParentCategories.find({});
+  const payload = {
+    ...req.body,
+    id: count.length + 1,
+  };
+
+  const data = await new ParentCategories(payload);
+
+  data
+    .save()
+    .then(() => {
+      res.send("parent category added successfully");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+app.get("/getparentcategory", async (req, res) => {
+  connectDB("ecomadmin");
+
+  const data = await ParentCategories.find({});
+  res.json(data);
 });
 
 app.listen(8000, () => {
