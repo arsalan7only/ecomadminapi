@@ -10,7 +10,7 @@ const productModel = mongoose.model("products", {
   productinformation: {
     sku: String,
     modelnumber: String,
-    productquantity: Number,
+    productquantity: String,
   },
   price: {
     bestprice: String,

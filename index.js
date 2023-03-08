@@ -11,7 +11,7 @@ const imageModel = require("./Models/imageModels");
 const productModel = require("./Models/productModel");
 
 const app = express();
-app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(json());
 
@@ -76,6 +76,35 @@ app.get("/getcustomer", async (req, res) => {
   });
 });
 
+app.post("/customer/changestatus", async (req, res) => {
+  connectDB("ecomadmin");
+  const { status, id } = req.body;
+  console.log(status);
+  if (status == 2) {
+    await customerModel
+      .deleteMany({ id: id })
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((err) => {
+        res.send(err).status(400);
+      });
+  } else {
+    if (status == 0 || status == 1) {
+      await customerModel
+        .updateMany({ id: id }, { status: status == 0 ? false : true })
+        .then((data) => {
+          res.json(data);
+        })
+        .catch((err) => {
+          res.send(err).status(500);
+        });
+    } else {
+      res.send("inviled data").status(400);
+    }
+  }
+});
+
 app.post("/uplaodimage", upload.single("imageData"), async (req, res, next) => {
   connectDB("ecomadmin");
   const count = await imageModel.find({});
@@ -134,9 +163,8 @@ app.post("/addproduct", async (req, res) => {
     createdproduct: new Date(),
     updatedproduct: new Date(),
   };
-  console.log(obj);
-  const data = new productModel(obj);
-  await data
+  const data = await new productModel(obj);
+  data
     .save()
     .then(() => {
       res.send("customer added sccessfully");
@@ -145,16 +173,6 @@ app.post("/addproduct", async (req, res) => {
       res.status(400);
       console.log(err);
     });
-});
-
-app.get("/getproduct", async (req, res) => {
-  connectDB("ecomadmin");
-
-  const count = await ProductModel.find();
-  const data = await ProductModel.deleteMany();
-  res.json({
-    data,
-  });
 });
 
 app.listen(8000, () => {
