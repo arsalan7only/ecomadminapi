@@ -1,4 +1,5 @@
 const express = require("express");
+// const http = require("http");
 const cors = require("cors");
 const connectDB = require("./db");
 const customerModel = require("./Models/customerModel");
@@ -10,6 +11,9 @@ const fs = require("fs");
 const imageModel = require("./Models/imageModels");
 const productModel = require("./Models/productModel");
 const ParentCategories = require("./Models/ParentCategories");
+const countryModel = require("./Models/CountryModel");
+const userModel = require("./Models/UserModel");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -202,6 +206,57 @@ app.get("/getparentcategory", async (req, res) => {
 
   const data = await ParentCategories.find({});
   res.json(data);
+});
+
+app.post("/addcountries", async (req, res) => {
+  connectDB("ecomadmin");
+  const payload = req.body;
+  const contrey = await countryModel(payload);
+  contrey.save();
+  res.send("country add successfully");
+});
+
+app.get("/deletcountrie", async (req, res) => {
+  connectDB("ecomadmin");
+  countryModel.deleteMany({}).then((data) => {
+    res.json(data);
+  });
+});
+
+app.post("/adduser", async (req, res) => {
+  connectDB("ecomadmin");
+
+  const count = await userModel.find({});
+
+  const payload = {
+    ...req.body,
+    active: false,
+    id: count.length + 1,
+  };
+
+  const data = await userModel(payload);
+  data
+    .save()
+    .then(() => {
+      res.send("user added successfully");
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+});
+
+app.post("/login", async (req, res) => {
+  connectDB("ecomadmin");
+  const payload = req.body;
+
+  const data = await userModel.find(payload);
+  if (data.length > 0) {
+    const key = "Career_next";
+    const token = jwt.sign(payload, key);
+    res.json(token);
+  } else {
+    res.send("inviled credential");
+  }
 });
 
 app.listen(8000, () => {
